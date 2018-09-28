@@ -1,0 +1,6 @@
+#table-heading th{
+    border-top: none !important;
+}
+input[is-error = true]{
+ color: red;
+}
