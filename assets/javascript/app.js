@@ -22,8 +22,8 @@
   var updateTimerId;
   var updateTimerRunning = false;
 
-  var dbUpdateTimer = {
-    timeLimit :10,
+  var displayUpdateTimer = {
+    timeLimit :60,//60s equal 1 min
     stop: function(){
          // DONE: Use clearInterval to stop the count here and set the clock to not be running.
             clearInterval(updateTimerId);
@@ -32,8 +32,8 @@
             //console.error("Stopping nextQuestionStopWatch");
     },
     start: function(){
-        if (!nextQuestionClockRunning) {
-            updateTimerId = setInterval(updateDataBase,  1000 * dbUpdateTimer.timeLimit);
+        if (!updateTimerRunning) {
+            updateTimerId = setInterval(updateDisplay,  1000 * displayUpdateTimer.timeLimit);
             updateTimerRunning = true;
             //console.log("NEXT QUESTION TIMER HAS BEEN STARTED");
              //console.error("Starting nextQuestionStopWatch");
@@ -41,10 +41,13 @@
     }
 }
 
+  //Start timer for DB updates
+  displayUpdateTimer.start();
+
   //Step4: Set Global Calculated Variables
   var arrival = 0; 
   var minutesAway = 0; 
-  var invalidTimeMsg = "Please enter a valid time."
+  var invalidTimeMsg = "Please enter a valid value."
   var $displayfirstTimeError = $("#first-time-input").attr('is-error');
   console.log("**firstTimeError = "+$displayfirstTimeError);
 
@@ -60,16 +63,45 @@
     destination = $("#destination-input").val().trim();
     firstArrival = $("#first-time-input").val().trim();
     firstArrivalObject = moment(firstArrival, "HH:mm").format("X");//Set format to Unix Epoch
+    frequency = $("#frequency-input").val().trim();
 
-    //Step6A - Edge Case Error Handling: Do not except evalid date
+    //Step6 - Edge Case Error Handling: Do not except evalid date
+    var invalidInput = false;
+    /*if(name && destination && firstArrival){
+      console.log("--------Invalid Information----------");
+      invalidInput = true;
+      //return;
+    }*/
+    if(!name){
+      $("#name-input").val(invalidTimeMsg);
+      $("#name-input").attr('is-error', 'true');
+      invalidInput = true;
+      console.log("Name = "+name);
+    }
+    if(!destination){
+      $("#destination-input").val(invalidTimeMsg);
+      $("#destination-input").attr('is-error', 'true');
+      invalidInput = true;
+      console.log("destination = "+destination);
+    }
     if (firstArrivalObject === "Invalid date"){
       $("#first-time-input").val(invalidTimeMsg);
       $("#first-time-input").attr('is-error', 'true');
-      
-      console.log("Invalid date");
+      invalidInput = true;
+      console.log("firstArrivalObject = "+firstArrivalObject);
+      //return;
+    }
+    if(!frequency.match(/^\d+$/)){
+      $("#frequency-input").val(invalidTimeMsg);
+      $("#frequency-input").attr('is-error', 'true');
+      invalidInput = true;
+      console.log("frequency = "+frequency);
+    }
+
+    if(invalidInput){
       return;
     }
-    frequency = $("#frequency-input").val().trim();
+    
 
     console.log("Name = "+name);
     console.log("Destination = "+destination);
@@ -81,79 +113,88 @@
       destinationDB: destination,
       firstArrivalDB: firstArrival,
       frequencyDB: frequency
-    });//Push
+    });//database Push
 
-    //Step6B - Edge Case Error Handling: Reset color of first time field
-    $("#first-time-input").attr('is-error', 'false');//reset error attribute to false
+   //Step7: Clear Input values after they are stored in the DB, On Button Click
+   $("#name-input").val('');
+   $("#destination-input").val('');
+   $("#first-time-input").val('');
+    
+
+    //Step8A: Call Update Form display, On Button Click
+    updateDisplay();
   });//submit-click even
 
-    //Step7: Clear Input values after they are stored in the DB
-    $("#name-input").val('');
-    $("#destination-input").val('');
-    $("#first-time-input").val('');
+  //Step8B: Call Update Form display, if the button is not clicked, to pull whatever is in db
+  updateDisplay();
 
-    //Step8: Take a snapshot and save db values to global variables to be displayed on DB update
-      database.ref().on("child_added", function(snapshot){
-        var records = snapshot.val();
+      function updateDisplay(){
+        //Step9: Empty out all the Table elements before appending new data
+         $('#train-body').empty();
 
-        //Step7: Pull data directly from DB, not the reinitialized Global Variables, to populate the table
-        /*var nameDBRef = records.nameDB;
-        var destinationDBRef = records.destinationDB;
-        var firstArrivalDBRef = records.firstArrivalDB;
-        var frequencyDBRef = records.frequencyDB;*/
-        name = records.nameDB;
-        destination = records.destinationDB;
-        firstArrival = records.firstArrivalDB;
-        frequency = records.frequencyDB;
+        //Step10: Take a snapshot and save db values to global variables to be displayed on DB update
+        database.ref().on("child_added", function(snapshot){
+          var records = snapshot.val();
 
-        //Step9: Assign values to Global Calculated fields
-        /*****************************
-        * Calculate Months Worked
-        ******************************/
-       var firstArrivalTimeFormat = "HH:mm:ss";
-       var currentTime = moment(moment(), firstArrivalTimeFormat);
-       var firstArrivalTime = moment(firstArrival, firstArrivalTimeFormat);
-       var diffInMinutes = currentTime.diff(firstArrivalTime, 'minutes');
-       /******************************************************************* */
-       console.log("CurrentTime = "+currentTime);
-       console.log("PastTime = "+firstArrivalTime);
-       console.log("Difference between past and current in TIME in Hours = "+diffInMinutes);
+          //Step11: Pull data directly from DB, not the reinitialized Global Variables, to populate the table
+          name = records.nameDB;
+          destination = records.destinationDB;
+          firstArrival = records.firstArrivalDB;
+          frequency = parseInt(records.frequencyDB);
 
-        var timeSpentInWait = diffInMinutes % frequency;
-        console.log("Time spent in wait = "+timeSpentInWait);
+          //Step12: Assign values to Global Calculated fields
+          /*****************************
+          * Calculate Months Worked
+          ******************************/
+        var firstArrivalTimeFormat = "HH:mm:ss";
+        var minSecondsFormat = "mm:ss";
+        //var frequencyTimeFormat ="minutes";
+        var currentTime = moment(moment(), firstArrivalTimeFormat);
+        var firstArrivalTime = moment(firstArrival, firstArrivalTimeFormat);
+        var diffInMinutes = currentTime.diff(firstArrivalTime, 'minutes');
+        /*var frequencyTime = moment(frequency, "minutes").format('mm');*/
+        /***************************************************************** */
+        //Display formatted times
+        /******************************************************************* */
+        console.log("CurrentTime Formatted = "+currentTime.format('HH:mm:ss a'));
+        console.log("FirstTime Formatted = "+firstArrivalTime.format('HH:mm:ss a'));
+        console.log("Difference between firstArrival and current TIME in Minutes = "+diffInMinutes);
+        
+        /************************************************************************
+         /**********************************************************************
+          * Use UNIX EPOCH TIME FOR CALCULATIONS: DO NOT TOUCH THIS CODE
+          **********************************************************************/
+          var timeSpentInWait = diffInMinutes %  frequency;
+          console.log("Time spent in wait = "+timeSpentInWait);
 
-        minutesAway = moment(frequency-timeSpentInWait, 'minutes').format('mm');
-        console.log("Train is "+minutesAway+" minutes away");
+          minutesAway = moment( frequency-timeSpentInWait, "minutes").format('mm');
+          
+          console.log("Train is "+minutesAway+" minutes away");
 
-        arrival = currentTime.add(minutesAway, 'minutes').format('HH:mm:ss a');
-        //formattedArrivalTime = arrival.format('LT');
+          arrival = currentTime.add(minutesAway, 'minutes').format('HH:mm:ss a');
+          console.log("ArrivalCALC = "+arrival);
+          /******************************************************************* */         
+          console.log("In database eventlistener");
+          console.log("Name = "+name);
+          console.log("Destination = "+destination);
+          console.log("FirstArrival = "+firstArrival);
+          console.log("Frequency = "+ frequency);
+          
+          //If time is in the past, then set displays to train not started
+          /*if(minutesAway === 'Invalid date')
+          {
+            minutesAway = 'Not Started';
+            arrival = 'Not Started';
+          }*/
+          //Step13: Append data to table
+          appendTRElement(name, destination,  frequency, arrival, minutesAway);
+        // Handle the errors
+        }, function(errorObject) {
+          console.log("Errors handled: " + errorObject.code);
+        });//db eventlisterner*/
+      }//updateDisplay
 
-        //console.log("ArrivalCALC = "+formattedArrivalTime);
-        console.log("ArrivalCALC = "+arrival);
-        /******************************************************************* */         
-        //console.log("In database eventlistener");
-        /*console.log("NameDB = "+nameDBRef);
-        console.log("DestinationDB = "+destinationDBRef);
-        console.log("FirstArrivalDB = "+firstArrivalDBRef);
-        console.log("FrequencyDB = "+frequencyDBRef);
-
-        //Step10: Append data to table
-        appendTRElement(nameDBRef, destinationDBRef, frequencyDBRef, arrival, minutesAway);*/
-
-        console.log("In database eventlistener");
-        console.log("Name = "+name);
-        console.log("Destination = "+destination);
-        console.log("FirstArrival = "+firstArrival);
-        console.log("Frequency = "+frequency);
-
-        //Step11: Append data to table
-        appendTRElement(name, destination, frequency, arrival, minutesAway);
-      // Handle the errors
-      }, function(errorObject) {
-        console.log("Errors handled: " + errorObject.code);
-      });//db eventlisterner*/
-
-      function appendTRElement(nameDBRef, destinationDBRef, frequencyDBRef, arrival, minutesAway){
+      function appendTRElement(name, destination, frequency, arrival, minutesAway){
         //create table row
         $newTRElement = $('<tr>');
 
@@ -162,7 +203,7 @@
         ****************************/
         $newTDName = $('<td>');
         $newTDName.attr('id','name-display');
-        $newTDName.text(nameDBRef);
+        $newTDName.text(name);
         //append Table Data name to Table Row
         $newTRElement.append($newTDName);
 
@@ -171,7 +212,7 @@
         ****************************/
         $newTDDestination = $('<td>');
         $newTDDestination.attr('id','destination-display');
-        $newTDDestination.text(destinationDBRef);
+        $newTDDestination.text(destination);
         //Append Table Data rate to Table Row
         $newTRElement.append($newTDDestination);
 
@@ -180,7 +221,7 @@
         ****************************/
        $newTDFrequency = $('<td>');
        $newTDFrequency.attr('id','frequency-display');
-       $newTDFrequency.text(frequencyDBRef);
+       $newTDFrequency.text(frequency);
        //Append Table Data rate to Table Row
        $newTRElement.append($newTDFrequency);
 
