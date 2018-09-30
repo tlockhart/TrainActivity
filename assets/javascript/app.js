@@ -15,12 +15,19 @@
   //Step3: Set Global Variables Initial Values
   var name = "";
   var destination = "";
-  var firstArrival =0;
+  var firstArrival = 0;
   var frequency = 0;
 
   //Timer variables
   var updateTimerId;
   var updateTimerRunning = false;
+
+  //Step4: Set Global Calculated Variables
+  var arrival = 0; 
+  var minutesAway = 0; 
+  var invalidTimeMsg = "Please enter a valid value."
+  var $displayfirstTimeError = $("#first-time-input").attr('is-error');
+  console.log("**firstTimeError = "+$displayfirstTimeError);
 
   var displayUpdateTimer = {
     timeLimit :60,//60s equal 1 min
@@ -44,13 +51,6 @@
   //Start timer for DB updates
   displayUpdateTimer.start();
 
-  //Step4: Set Global Calculated Variables
-  var arrival = 0; 
-  var minutesAway = 0; 
-  var invalidTimeMsg = "Please enter a valid value."
-  var $displayfirstTimeError = $("#first-time-input").attr('is-error');
-  console.log("**firstTimeError = "+$displayfirstTimeError);
-
   //Step5: Capture Button Click and store Input into DB
   $("#submit-train").on("click", function(event) {
     // Don't refresh the page!
@@ -62,7 +62,7 @@
     name = $("#name-input").val().trim();
     destination = $("#destination-input").val().trim();
     firstArrival = $("#first-time-input").val().trim();
-    firstArrivalObject = moment(firstArrival, "HH:mm").format("X");//Set format to Unix Epoch
+    firstArrivalObject = moment(firstArrival, "HH:mm").subtract(1, "years").format("X");//Set format to Unix Epoch, subtract a year from the mom
     frequency = $("#frequency-input").val().trim();
 
     //Step6 - Edge Case Error Handling: Do not except evalid date
@@ -111,7 +111,7 @@
     database.ref().push({
       nameDB: name,
       destinationDB: destination,
-      firstArrivalDB: firstArrival,
+      firstArrivalDB: firstArrivalObject,
       frequencyDB: frequency
     });//database Push
 
@@ -119,14 +119,11 @@
    $("#name-input").val('');
    $("#destination-input").val('');
    $("#first-time-input").val('');
-    
+   $("#frequency-input").val('');
 
     //Step8A: Call Update Form display, On Button Click
     updateDisplay();
   });//submit-click even
-
-  //Step8B: Call Update Form display, if the button is not clicked, to pull whatever is in db
-  updateDisplay();
 
       function updateDisplay(){
         //Step9: Empty out all the Table elements before appending new data
@@ -140,18 +137,27 @@
           name = records.nameDB;
           destination = records.destinationDB;
           firstArrival = records.firstArrivalDB;
-          frequency = parseInt(records.frequencyDB);
+          frequency = parseInt(records.frequencyDB);//Uncessary Conversion
 
           //Step12: Assign values to Global Calculated fields
           /*****************************
           * Calculate Months Worked
           ******************************/
-        var firstArrivalTimeFormat = "HH:mm:ss";
-        var minSecondsFormat = "mm:ss";
+        var firstArrivalTimeFormat = "X";///UNIX EPOCH
+        //var minSecondsFormat = "mm:ss";
         //var frequencyTimeFormat ="minutes";
-        var currentTime = moment(moment(), firstArrivalTimeFormat);
+        //var currentTime = moment(moment(), firstArrivalTimeFormat); //BROKE THE CODE, because you must tell what format the arg is in
+        var currentTime = moment();
         var firstArrivalTime = moment(firstArrival, firstArrivalTimeFormat);
         var diffInMinutes = currentTime.diff(firstArrivalTime, 'minutes');
+        //Prevent prob when arrival later than current time
+        console.log("DIFF IN MINUTES = "+diffInMinutes);
+       /* if (diffInMinutes < 0){
+          minutesAway = Math.abs(diffInMinutes);//return positive value
+          arrival = firstArrivalTime.format('HH:mm:ss a');
+        }
+        else{*/
+       
         /*var frequencyTime = moment(frequency, "minutes").format('mm');*/
         /***************************************************************** */
         //Display formatted times
@@ -167,7 +173,8 @@
           var timeSpentInWait = diffInMinutes %  frequency;
           console.log("Time spent in wait = "+timeSpentInWait);
 
-          minutesAway = moment( frequency-timeSpentInWait, "minutes").format('mm');
+          //minutesAway = moment( frequency-timeSpentInWait, "minutes").format('mm'); //already in mins
+          minutesAway = frequency-timeSpentInWait;
           
           console.log("Train is "+minutesAway+" minutes away");
 
@@ -179,7 +186,8 @@
           console.log("Destination = "+destination);
           console.log("FirstArrival = "+firstArrival);
           console.log("Frequency = "+ frequency);
-          
+             
+        /*}//else*/
           //If time is in the past, then set displays to train not started
           /*if(minutesAway === 'Invalid date')
           {
@@ -248,4 +256,7 @@
         $('#train-body').append($newTRElement);
         /****************************/
       }//AppendElement
+
+      //Step8B: Call Update Form display, if the button is not clicked, to pull whatever is in db
+      updateDisplay();
  
