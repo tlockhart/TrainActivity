@@ -1,6 +1,10 @@
 #table-heading th{
     border-top: none !important;
 }
-input[is-error = true]{
+/*input[is-error = true]{
  color: red;
-}
+}*/
+p[is-error = true]{
+    color: red;
+    margin-bottom:0;
+   }

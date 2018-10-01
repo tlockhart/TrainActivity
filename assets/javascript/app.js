@@ -35,15 +35,11 @@
          // DONE: Use clearInterval to stop the count here and set the clock to not be running.
             clearInterval(updateTimerId);
             updateTimerRunning = false;
-           // //console.log("NEXT QUESTION TIMER HAS BEEN STOPPED!")
-            //console.error("Stopping nextQuestionStopWatch");
     },
     start: function(){
         if (!updateTimerRunning) {
             updateTimerId = setInterval(updateDisplay,  1000 * displayUpdateTimer.timeLimit);
             updateTimerRunning = true;
-            //console.log("NEXT QUESTION TIMER HAS BEEN STARTED");
-             //console.error("Starting nextQuestionStopWatch");
         }//if
     }
 }
@@ -56,44 +52,39 @@
     // Don't refresh the page!
     event.preventDefault();
 
-    // YOUR TASK!!!
-    // Code in the logic for storing and retrieving the most recent user.
-    // Don't forget to provide initial data to your Firebase database.
     name = $("#name-input").val().trim();
     destination = $("#destination-input").val().trim();
     firstArrival = $("#first-time-input").val().trim();
-    firstArrivalObject = moment(firstArrival, "HH:mm").subtract(1, "years").format("X");//Set format to Unix Epoch, subtract a year from the mom
+
+    //Set format to Unix Epoch, subtract a year from the firstArrival time, so the first train time is never after the current time.
+    firstArrivalObject = moment(firstArrival, "HH:mm")/*.subtract(1, "years")*/.format("X");
     frequency = $("#frequency-input").val().trim();
 
     //Step6 - Edge Case Error Handling: Do not except evalid date
     var invalidInput = false;
-    /*if(name && destination && firstArrival){
-      console.log("--------Invalid Information----------");
-      invalidInput = true;
-      //return;
-    }*/
+   
     if(!name){
-      $("#name-input").val(invalidTimeMsg);
-      $("#name-input").attr('is-error', 'true');
+      $("#name-error").text(invalidTimeMsg);
+      $("#name-error").attr('is-error', 'true');
       invalidInput = true;
       console.log("Name = "+name);
     }
     if(!destination){
-      $("#destination-input").val(invalidTimeMsg);
-      $("#destination-input").attr('is-error', 'true');
+      $("#destination-error").text(invalidTimeMsg);
+      $("#destination-error").attr('is-error', 'true');
       invalidInput = true;
       console.log("destination = "+destination);
     }
     if (firstArrivalObject === "Invalid date"){
-      $("#first-time-input").val(invalidTimeMsg);
-      $("#first-time-input").attr('is-error', 'true');
+      $("#first-time-error").text(invalidTimeMsg);
+      $("#first-time-error").attr('is-error', 'true');
       invalidInput = true;
       console.log("firstArrivalObject = "+firstArrivalObject);
       //return;
     }
     if(!frequency.match(/^\d+$/)){
-      $("#frequency-input").val(invalidTimeMsg);
-      $("#frequency-input").attr('is-error', 'true');
+      $("#frequency-error").text(invalidTimeMsg);
+      $("#frequency-error").attr('is-error', 'true');
       invalidInput = true;
       console.log("frequency = "+frequency);
     }
@@ -102,7 +93,6 @@
       return;
     }
     
-
     console.log("Name = "+name);
     console.log("Destination = "+destination);
     console.log("First Arrival Time = "+firstArrival);
@@ -116,9 +106,13 @@
     });//database Push
 
    //Step7: Clear Input values after they are stored in the DB, On Button Click
+   $("#name-error").empty();
    $("#name-input").val('');
+   $("#destination-error").empty();
    $("#destination-input").val('');
+   $("#first-time-error").empty();
    $("#first-time-input").val('');
+   $("#frequency-error").empty();
    $("#frequency-input").val('');
 
     //Step8A: Call Update Form display, On Button Click
@@ -141,24 +135,29 @@
 
           //Step12: Assign values to Global Calculated fields
           /*****************************
-          * Calculate Months Worked
+          * Calculate Arrival Times
           ******************************/
-        var firstArrivalTimeFormat = "X";///UNIX EPOCH
-        //var minSecondsFormat = "mm:ss";
-        //var frequencyTimeFormat ="minutes";
-        //var currentTime = moment(moment(), firstArrivalTimeFormat); //BROKE THE CODE, because you must tell what format the arg is in
+        //BROKE THE CODE, because moment accept the format of the data as the second argument, the format must match the data
+        //var currentTime = moment(moment(), firstArrivalTimeFormat); 
         var currentTime = moment();
-        var firstArrivalTime = moment(firstArrival, firstArrivalTimeFormat);
+        var firstArrivalTime = moment(firstArrival, "X");
         var diffInMinutes = currentTime.diff(firstArrivalTime, 'minutes');
-        //Prevent prob when arrival later than current time
+
+        //Prevent prob when first Arrival Time is later than Current Time
         console.log("DIFF IN MINUTES = "+diffInMinutes);
-       /* if (diffInMinutes < 0){
-          minutesAway = Math.abs(diffInMinutes);//return positive value
+       if (diffInMinutes < 0){
+          console.log("ABNORMAL TIME: CURRENT TIME BEFORE FIRST TIME");
+          diffInMinutes = Math.abs(diffInMinutes);//return positive value
+
+          //Set mins to abs value of the difference between the current Time and First Arrival Time
+          minutesAway = diffInMinutes;
+          console.log("Train is "+minutesAway+" minutes away");
+
+          //Set Arrival Time to the FirstArrival Time, since it hasn't occured yet
           arrival = firstArrivalTime.format('HH:mm:ss a');
         }
-        else{*/
-       
-        /*var frequencyTime = moment(frequency, "minutes").format('mm');*/
+        else {
+          console.log("NORMAL TIME:FIRST TIME BEFORE CURRENT TIME");
         /***************************************************************** */
         //Display formatted times
         /******************************************************************* */
@@ -173,7 +172,8 @@
           var timeSpentInWait = diffInMinutes %  frequency;
           console.log("Time spent in wait = "+timeSpentInWait);
 
-          //minutesAway = moment( frequency-timeSpentInWait, "minutes").format('mm'); //already in mins
+          //Redundant since minutesAway is already in mins format
+          //minutesAway = moment( frequency-timeSpentInWait, "minutes").format('mm'); 
           minutesAway = frequency-timeSpentInWait;
           
           console.log("Train is "+minutesAway+" minutes away");
@@ -186,14 +186,7 @@
           console.log("Destination = "+destination);
           console.log("FirstArrival = "+firstArrival);
           console.log("Frequency = "+ frequency);
-             
-        /*}//else*/
-          //If time is in the past, then set displays to train not started
-          /*if(minutesAway === 'Invalid date')
-          {
-            minutesAway = 'Not Started';
-            arrival = 'Not Started';
-          }*/
+        }
           //Step13: Append data to table
           appendTRElement(name, destination,  frequency, arrival, minutesAway);
         // Handle the errors

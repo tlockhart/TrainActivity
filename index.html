@@ -94,18 +94,22 @@
               <div class="form-group row">
                 <label for="name-input">Train Name</label>
                 <input class="form-control" id="name-input" type="text">
+                <p id="name-error"></p>
               </div>
               <div class="form-group row">
                 <label for="destination-input">Destination</label>
                 <input class="form-control" id="destination-input" type="text">
+                <p id="destination-error"></p>
               </div>
               <div class="form-group row">
                 <label for="first-time-input">First Train Time (HH:mm - military time)</label>
                 <input class="form-control" id="first-time-input" type="text" is-error="false">
+                <p id="first-time-error"></p>
               </div>
               <div class="form-group row">
                 <label for="frequency-input">Frequency (min)</label>
                 <input class="form-control" id="frequency-input" type="text">
+                <p id="frequency-error"></p>
               </div>
               <button class="btn btn-primary" id="submit-train" type="submit">Submit</button>
             </form>
