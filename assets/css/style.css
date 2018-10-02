@@ -1,5 +1,6 @@
 #table-heading th{
     border-top: none !important;
+    width: 10px !important;
 }
 /*input[is-error = true]{
  color: red;
@@ -8,3 +9,9 @@ p[is-error = true]{
     color: red;
     margin-bottom:0;
    }
+#del-button, #edit-button{
+    overflow:hidden;
+    padding-top:5px;
+    padding-bottom:5px;
+    border-top: 1px solid rgb(222, 226, 230);
+}   
