@@ -4,7 +4,36 @@
 }
 .card-header{
     font-weight:bold;
+    /*background-color: #E1EDFE !important;
+background-color: #e9ecef !important;*/
+    background-color: #e9ecef !important;
+    border:1px solid #6887B2;
+    color:#6887B2;
+    /*background: #A9B2BF !important;*/
+    /*background: #6887B2 !important;
+    border-color: #6887B2 !important;*/
 }
+.card-body{
+    /*background-color: #E1EDFE!important;*/
+    background-color: #FFFFFE !important;
+    border:1px solid #6887B2;
+}
+.jumbotron{
+    background-color: #6887B2 !important;
+    border:1px solid #e9ecef;
+    color: #e9ecef;
+    /*background: #6887B2 !important;
+    border-color: #6887B2 !important;*/
+}
+th{
+    /*background:#6887B2;*/
+    background: #6887B2;
+    /*background:#F2D5A3;*/
+    color:#e9ecef;
+    font-weight: bold;
+}
+tr:nth-child(even) {background: #E1EDFE;}
+tr:nth-child(odd) {background: #AED0FE;}
 p[is-error = true]{
     color: red;
     margin-bottom:0;
@@ -15,3 +44,15 @@ p[is-error = true]{
     padding-bottom:5px;
     border-top: 1px solid rgb(222, 226, 230);
 }   
+button{
+    background:#BF8982 !important;
+    border-color:#8C645F !important;
+}
+button:focus, .btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .btn:hover{
+      background:white !important;
+      color:#8C645F !important;
+  }
