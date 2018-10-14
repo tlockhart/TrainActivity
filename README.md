@@ -5,7 +5,7 @@ This repo is an interactive train scheduling application.  The user enters train
 1. Train Schedule Display
 1. Error Messages for inappropriate data
 # Demo
-*https://tlockhart.github.io/TrainActivity/
+* https://tlockhart.github.io/TrainScheduler/
 ## Setup
 In order to run the app, you will need to run the index.html file on a computer with a web browser and internet access.  After cloning the repository, you can edit the files in your IDE of choice.  The main files are:
 1. index.html
