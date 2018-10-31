@@ -18,6 +18,7 @@ In order to run the app, you will need to run the index.html file on a computer 
 1. JavaScript
 1. CSS3
 1. HTML5
+1. Firebase
 ## Use
 This repo is available for public non-commercial use only.
 ## Goal
