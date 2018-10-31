@@ -1,11 +1,11 @@
-# Train Activity
+# Train Scheduler
 This repo is an interactive train scheduling application.  The user enters train information [train name, destination, first arrival time (in military time), and train frequency], which is stored in a Firebase database.  The application displays up-to-date information on the trains next arrival time and minutes until arrival.  The next arrival time and minutes until arrival are updated every minute to keep the information current.  In addition, delete and edit buttons have been added to remove and update a record.  The app displays the following:
 1. Edit, Delete, and Submit Buttons
 1. User Input Forms
 1. Train Schedule Display
 1. Error Messages for inappropriate data
 # Demo
-*https://tlockhart.github.io/TrainActivity/
+* https://tlockhart.github.io/TrainScheduler/
 ## Setup
 In order to run the app, you will need to run the index.html file on a computer with a web browser and internet access.  After cloning the repository, you can edit the files in your IDE of choice.  The main files are:
 1. index.html
